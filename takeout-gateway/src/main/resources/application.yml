@@ -1,0 +1,32 @@
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+#          username: nacos
+#          password: nacos
+    gateway:
+      routes:
+        - id: takeout-user-service
+          uri: lb://takeout-user-service
+          predicates:
+            - Path=/api/user/**
+        - id: takeout-shop-service
+          uri: lb://takeout-shop-service
+          predicates:
+            - Path=/api/shop/**
+      discovery:
+        locator:
+          # 让gateway根据注册中心找到其他服务
+          enabled: true
+  application:
+    name: takeout-gateway
+  main:
+    web-application-type: reactive
+server:
+  port: 8200
+#knife4j:
+#  # 开启增强配置
+#  enable: true
+#  # 开启生产环境屏蔽
+#  production: true
