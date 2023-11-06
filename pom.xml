@@ -13,6 +13,7 @@
         <module>takeout-gateway</module>
         <module>takeout-shop-service</module>
         <module>takeout-service-client</module>
+        <module>takeout-menu-service</module>
     </modules>
     <name>takeout-parent</name>
     <description>takeout-parent</description>

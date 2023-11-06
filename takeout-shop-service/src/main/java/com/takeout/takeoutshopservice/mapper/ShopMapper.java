@@ -10,7 +10,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 * @Entity com.takeout.takeoutmodel.entity.Shop
 */
 public interface ShopMapper extends BaseMapper<Shop> {
-
 }
 
 

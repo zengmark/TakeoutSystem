@@ -41,9 +41,20 @@ public class Shop implements Serializable {
     private Integer isDelete;
 
     /**
-     * 店铺名称
+     * 店铺名称，这里是通过 bitmap 来判断标签
      */
     private String shopName;
+
+    /**
+     * 店铺图片
+     */
+    private String picture;
+
+    /**
+     * 店主ID
+     */
+    private Long userId;
+
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

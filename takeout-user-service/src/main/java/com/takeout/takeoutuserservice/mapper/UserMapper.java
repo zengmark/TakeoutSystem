@@ -2,9 +2,6 @@ package com.takeout.takeoutuserservice.mapper;
 
 import com.takeout.takeoutmodel.entity.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.apache.ibatis.annotations.Select;
-
-import java.util.List;
 
 /**
 * @author 13123

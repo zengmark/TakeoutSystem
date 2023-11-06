@@ -6,6 +6,7 @@ import com.takeout.takeoutcommon.common.ErrorCode;
 import com.takeout.takeoutcommon.constant.UserConstant;
 import com.takeout.takeoutcommon.exception.BusinessException;
 import com.takeout.takeoutmodel.entity.User;
+import com.takeout.takeoutmodel.enums.UserRoleEnum;
 import com.takeout.takeoutmodel.request.UserLoginRequest;
 import com.takeout.takeoutmodel.request.UserRegisterRequest;
 import com.takeout.takeoutuserservice.mapper.UserMapper;
@@ -125,7 +126,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if(request == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        request.removeAttribute(UserConstant.USER_LOGIN_STATE);
+        request.getSession().removeAttribute(UserConstant.USER_LOGIN_STATE);
         return true;
     }
 
@@ -153,6 +154,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE, safetyUser);
 
         return result;
+    }
+
+    @Override
+    public int changeRole(User loginUser, UserRoleEnum userRoleEnum) {
+        if(loginUser == null || userRoleEnum == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = userMapper.selectById(loginUser.getId());
+        if(user == null){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+        }
+        user.setUserRole(userRoleEnum.getValue());
+        user.setShopId(loginUser.getShopId());
+        return userMapper.updateById(user);
     }
 
 }

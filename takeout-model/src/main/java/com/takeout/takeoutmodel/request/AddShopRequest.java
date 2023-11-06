@@ -12,4 +12,5 @@ public class AddShopRequest implements Serializable {
 
     private String tag;
 
+    private String picture;
 }

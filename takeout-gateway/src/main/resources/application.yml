@@ -15,6 +15,10 @@ spring:
           uri: lb://takeout-shop-service
           predicates:
             - Path=/api/shop/**
+        - id: takeout-menu-service
+          uri: lb://takeout-menu-service
+          predicates:
+            - Path=/api/menu/**
       discovery:
         locator:
           # 让gateway根据注册中心找到其他服务

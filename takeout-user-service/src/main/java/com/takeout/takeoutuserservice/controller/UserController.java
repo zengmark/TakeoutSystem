@@ -6,10 +6,14 @@ import com.takeout.takeoutcommon.common.ErrorCode;
 import com.takeout.takeoutcommon.common.ResultUtils;
 import com.takeout.takeoutcommon.constant.UserConstant;
 import com.takeout.takeoutcommon.exception.BusinessException;
+import com.takeout.takeoutmodel.entity.AddressInfo;
 import com.takeout.takeoutmodel.entity.User;
 import com.takeout.takeoutmodel.request.UserLoginRequest;
 import com.takeout.takeoutmodel.request.UserRegisterRequest;
+import com.takeout.takeoutmodel.vo.AddressInfoVO;
 import com.takeout.takeoutmodel.vo.UserVO;
+import com.takeout.takeoutuserservice.mapper.AddressInfoMapper;
+import com.takeout.takeoutuserservice.service.AddressInfoService;
 import com.takeout.takeoutuserservice.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -17,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @Slf4j
@@ -24,6 +30,9 @@ public class UserController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private AddressInfoService addressInfoService;
 
     @GetMapping("/test")
     public BaseResponse<User> test(HttpServletRequest request){
@@ -81,7 +90,7 @@ public class UserController {
     }
 
     /**
-     * 上传头像
+     * todo 上传用户头像
      * @return
      */
     @PostMapping("/upload")
@@ -113,6 +122,33 @@ public class UserController {
         user.setIsDelete(originUser.getIsDelete());
 
         return ResultUtils.success(userService.updateUser(user, originUser, request));
+    }
+
+    @GetMapping("/getUserAddress")
+    public BaseResponse<List<AddressInfoVO>> getUserAddress(HttpServletRequest request){
+        if(request == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        // 判断用户是否登录
+        User loginUser = (User) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        if(loginUser == null){
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+
+        List<AddressInfo> addressInfoList = addressInfoService.getUserAddress(loginUser);
+        List<AddressInfoVO> addressInfoVOList = addressInfoList.stream().map(this::getAddressVo).collect(Collectors.toList());
+        return ResultUtils.success(addressInfoVOList);
+    }
+
+    private AddressInfoVO getAddressVo(AddressInfo addressInfo){
+        if(addressInfo == null){
+            return null;
+        }
+
+        AddressInfoVO addressInfoVO = new AddressInfoVO();
+        BeanUtil.copyProperties(addressInfo, addressInfoVO);
+        return addressInfoVO;
     }
 
 }

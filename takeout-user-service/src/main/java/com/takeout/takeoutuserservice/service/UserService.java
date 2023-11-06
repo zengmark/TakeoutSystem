@@ -2,6 +2,7 @@ package com.takeout.takeoutuserservice.service;
 
 import com.takeout.takeoutmodel.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.takeout.takeoutmodel.enums.UserRoleEnum;
 import com.takeout.takeoutmodel.request.UserLoginRequest;
 import com.takeout.takeoutmodel.request.UserRegisterRequest;
 
@@ -22,4 +23,6 @@ public interface UserService extends IService<User> {
     Boolean userLogout(HttpServletRequest request);
 
     Integer updateUser(User user, User originUser, HttpServletRequest request);
+
+    int changeRole(User loginUser, UserRoleEnum userRoleEnum);
 }

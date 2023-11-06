@@ -26,4 +26,14 @@ public class ShopVO implements Serializable {
      * 店铺名称
      */
     private String shopName;
+
+    /**
+     * 店铺图片
+     */
+    private String picture;
+
+    /**
+     * 店主ID
+     */
+    private Long userId;
 }
