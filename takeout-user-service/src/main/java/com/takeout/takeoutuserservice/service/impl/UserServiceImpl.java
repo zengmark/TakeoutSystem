@@ -13,6 +13,7 @@ import com.takeout.takeoutuserservice.mapper.UserMapper;
 import com.takeout.takeoutuserservice.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
@@ -168,6 +169,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setUserRole(userRoleEnum.getValue());
         user.setShopId(loginUser.getShopId());
         return userMapper.updateById(user);
+    }
+
+    @Transactional
+    @Override
+    public int updateBalance(Long userId, Long shopUserId, Integer price) {
+        User user = userMapper.selectById(userId);
+        User shopUser = userMapper.selectById(shopUserId);
+        if(user == null || shopUser == null){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+        }
+        user.setBalance(user.getBalance() - price);
+        shopUser.setBalance(shopUser.getBalance() + price);
+        userMapper.updateById(user);
+        userMapper.updateById(shopUser);
+        return 1;
     }
 
 }

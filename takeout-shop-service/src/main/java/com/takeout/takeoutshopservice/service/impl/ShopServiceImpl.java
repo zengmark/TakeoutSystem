@@ -65,7 +65,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop>
         QueryWrapper<Shop> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("shopName", shopName);
         Shop shop = shopMapper.selectOne(queryWrapper);
-        if(shop != null){
+        if (shop != null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "店铺名已被注册");
         }
         shop = new Shop();
@@ -78,7 +78,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop>
 
         int userRole = loginUser.getUserRole();
         // 如果用户是普通用户，那么需要更改用户角色，发起远程调用，如果是店主，则拒绝访问，这个接口设计成成为店主的时候就发一个添加 shop 的请求
-        if(userRole == UserRoleEnum.USER.getValue()){
+        if (userRole == UserRoleEnum.USER.getValue()) {
             UserDto userDto = new UserDto();
             loginUser.setShopId(shop.getId());
             userDto.setUser(loginUser);
@@ -103,13 +103,13 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop>
 
     @Override
     public List<Shop> searchShopByName(String searchShopName) {
-        if(StrUtil.isBlank(searchShopName)){
+        if (StrUtil.isBlank(searchShopName)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "搜索参数不能为空");
         }
         QueryWrapper<Shop> queryWrapper = new QueryWrapper<>();
         queryWrapper.like("shopName", searchShopName);
         List<Shop> shopList = shopMapper.selectList(queryWrapper);
-        if(shopList == null){
+        if (shopList == null) {
             throw new BusinessException(ErrorCode.NULL_ERROR);
         }
         return shopList;
@@ -117,7 +117,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop>
 
     @Override
     public List<Shop> searchShopByTag(Integer tag) {
-        if(Objects.isNull(tag)){
+        if (Objects.isNull(tag)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "标签不能为空");
         }
         QueryWrapper<Shop> queryWrapper = new QueryWrapper<>();
@@ -128,15 +128,59 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop>
 
     @Override
     public AddressInfo getAddress(Long userId) {
-        if(Objects.isNull(userId)){
+        if (Objects.isNull(userId)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         AddressInfo addressInfo = userFeignClient.getAddressByUserId(userId);
-        if(addressInfo == null){
+        if (addressInfo == null) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR);
         }
         return addressInfo;
     }
+
+    @Override
+    public List<Shop> getShopToBeAudited() {
+        QueryWrapper<Shop> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("shopStatus", 1);
+        return shopMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public int auditShop(Long id, Boolean isPass) {
+        if(Objects.isNull(id) || Objects.isNull(isPass)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Shop shop = shopMapper.selectById(id);
+        if(shop == null){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "该店铺不存在");
+        }
+        // 如果审核通过，则更改状态，否则逻辑删除该店铺
+        if(isPass){
+            if(shop.getShopStatus() == 0){
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "该店铺已审核通过");
+            } else {
+                // 设置店铺状态为可用
+                shop.setShopStatus(0);
+                return shopMapper.updateById(shop);
+            }
+        } else {
+            // 查询店主
+            Long shopUserId = shop.getUserId();
+            User shopUser = userFeignClient.getUserById(shopUserId);
+            // 审核没通过，将用户的角色改为普通用户
+            UserDto userDto = new UserDto();
+            userDto.setUser(shopUser);
+            userDto.setUserRoleEnum(UserRoleEnum.USER);
+            userFeignClient.changeRole(userDto);
+            return shopMapper.deleteById(shop);
+        }
+    }
+
+    @Override
+    public List<Shop> getHistoryShops() {
+        return shopMapper.getHistoryShops();
+    }
+
 }
 
 

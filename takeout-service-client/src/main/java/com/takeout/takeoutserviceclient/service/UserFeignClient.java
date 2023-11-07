@@ -1,16 +1,15 @@
 package com.takeout.takeoutserviceclient.service;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.takeout.takeoutcommon.common.ErrorCode;
 import com.takeout.takeoutcommon.constant.UserConstant;
 import com.takeout.takeoutcommon.exception.BusinessException;
 import com.takeout.takeoutmodel.dto.UserDto;
 import com.takeout.takeoutmodel.entity.AddressInfo;
 import com.takeout.takeoutmodel.entity.User;
+import com.takeout.takeoutmodel.vo.AddressInfoVO;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -26,6 +25,12 @@ public interface UserFeignClient {
     @GetMapping("/get/address")
     AddressInfo getAddressByUserId(@RequestParam("userId") Long userId);
 
+    @GetMapping("/get/addressByAddressId")
+    AddressInfo getAddressByAddressId(@RequestParam("addressInfoId") Long addressInfoId);
+
+    @PutMapping("/updateBalance")
+    int updateBalance(@RequestParam("userId") Long userId, @RequestParam("shopUserId") Long shopUserId, @RequestParam("price") Integer price);
+
     @GetMapping("/test")
     int test();
 
@@ -35,6 +40,12 @@ public interface UserFeignClient {
             throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
         return loginUser;
+    }
+
+    default AddressInfoVO getAddressInfoVO(AddressInfo addressInfo){
+        AddressInfoVO addressInfoVO = new AddressInfoVO();
+        BeanUtil.copyProperties(addressInfo, addressInfoVO);
+        return addressInfoVO;
     }
 
     default User getSafetyUser(User originUser){

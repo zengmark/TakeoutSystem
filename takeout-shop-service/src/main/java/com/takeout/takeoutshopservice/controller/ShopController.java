@@ -17,10 +17,7 @@ import com.takeout.takeoutmodel.vo.AddressInfoVO;
 import com.takeout.takeoutmodel.vo.ShopVO;
 import com.takeout.takeoutshopservice.service.ShopService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -51,7 +48,13 @@ public class ShopController {
         return null;
     }
 
-    @PostMapping("/addshop")
+    /**
+     * 添加店铺
+     * @param addShopRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/addShop")
     public BaseResponse<ShopVO> addShop(AddShopRequest addShopRequest, HttpServletRequest request) {
         if (addShopRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -93,12 +96,13 @@ public class ShopController {
     @GetMapping("/getAllShops")
     public BaseResponse<List<ShopVO>> getAllShops() {
         List<Shop> shopList = shopService.list();
-        List<ShopVO> shopVOList = shopList.stream().map(this::getShopVO).collect(Collectors.toList());
+        List<ShopVO> shopVOList = shopList.stream().filter(shop -> shop.getShopStatus() == 0).map(this::getShopVO).collect(Collectors.toList());
         return ResultUtils.success(shopVOList);
     }
 
     /**
      * 按名称搜索店铺
+     * todo 分页返回
      * @param searchShopName
      * @return
      */
@@ -108,12 +112,13 @@ public class ShopController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         List<Shop> shopList = shopService.searchShopByName(searchShopName);
-        List<ShopVO> shopVOList = shopList.stream().map(this::getShopVO).collect(Collectors.toList());
+        List<ShopVO> shopVOList = shopList.stream().filter(shop -> shop.getShopStatus() == 0).map(this::getShopVO).collect(Collectors.toList());
         return ResultUtils.success(shopVOList);
     }
 
     /**
      * 按标签搜索店铺
+     * todo 分页返回
      * @param tag
      * @return
      */
@@ -123,10 +128,15 @@ public class ShopController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         List<Shop> shopList = shopService.searchShopByTag(tag);
-        List<ShopVO> shopVOList = shopList.stream().map(this::getShopVO).collect(Collectors.toList());
+        List<ShopVO> shopVOList = shopList.stream().filter(shop -> shop.getShopStatus() == 0).map(this::getShopVO).collect(Collectors.toList());
         return ResultUtils.success(shopVOList);
     }
 
+    /**
+     * 根据店主的用户ID获取到店铺的地址信息
+     * @param userId
+     * @return
+     */
     @GetMapping("/getShopAddress")
     public BaseResponse<AddressInfoVO> getShopAddress(@RequestParam("userId") Long userId){
         if(Objects.isNull(userId)){
@@ -136,6 +146,46 @@ public class ShopController {
         AddressInfoVO addressInfoVO = new AddressInfoVO();
         BeanUtil.copyProperties(addressInfo, addressInfoVO);
         return ResultUtils.success(addressInfoVO);
+    }
+
+    /**
+     * 获取所有待审核的店铺
+     * todo 分页返回，且按时间排序
+     * @return
+     */
+    @GetMapping("/getShopToBeAudited")
+    @AuthCheck(haveRole = "admin")
+    public BaseResponse<List<ShopVO>> getShopToBeAudited(){
+        List<Shop> shopList = shopService.getShopToBeAudited();
+        List<ShopVO> shopVOList = shopList.stream().map(this::getShopVO).collect(Collectors.toList());
+        return ResultUtils.success(shopVOList);
+    }
+
+    /**
+     * 返回所有店铺，包括被删除掉的
+     * @return
+     */
+    @GetMapping("/getHistoryShops")
+    @AuthCheck(haveRole = "admin")
+    public BaseResponse<List<ShopVO>> getHistoryShops(){
+        List<Shop> shopList = shopService.getHistoryShops();
+        List<ShopVO> shopVOList = shopList.stream().map(this::getShopVO).collect(Collectors.toList());
+        return ResultUtils.success(shopVOList);
+    }
+
+    /**
+     * 审核店铺
+     * @param id
+     * @return
+     */
+    @PutMapping("auditShop")
+    @AuthCheck(haveRole = "admin")
+    public BaseResponse<Integer> auditedShop(@RequestParam("id") Long id, @RequestParam("isPass") Boolean isPass){
+        if(Objects.isNull(id)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        int audit = shopService.auditShop(id, isPass);
+        return ResultUtils.success(audit);
     }
 
     private ShopVO getShopVO(Shop originShop) {

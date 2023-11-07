@@ -12,7 +12,6 @@ import com.takeout.takeoutmodel.request.UserLoginRequest;
 import com.takeout.takeoutmodel.request.UserRegisterRequest;
 import com.takeout.takeoutmodel.vo.AddressInfoVO;
 import com.takeout.takeoutmodel.vo.UserVO;
-import com.takeout.takeoutuserservice.mapper.AddressInfoMapper;
 import com.takeout.takeoutuserservice.service.AddressInfoService;
 import com.takeout.takeoutuserservice.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +32,7 @@ public class UserController {
 
     @Resource
     private AddressInfoService addressInfoService;
+
 
     @GetMapping("/test")
     public BaseResponse<User> test(HttpServletRequest request){
@@ -124,6 +124,11 @@ public class UserController {
         return ResultUtils.success(userService.updateUser(user, originUser, request));
     }
 
+    /**
+     * 获取用户地址
+     * @param request
+     * @return
+     */
     @GetMapping("/getUserAddress")
     public BaseResponse<List<AddressInfoVO>> getUserAddress(HttpServletRequest request){
         if(request == null){

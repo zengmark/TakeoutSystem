@@ -24,4 +24,10 @@ public interface ShopService extends IService<Shop> {
     List<Shop> searchShopByTag(Integer tag);
 
     AddressInfo getAddress(Long userId);
+
+    List<Shop> getShopToBeAudited();
+
+    int auditShop(Long id, Boolean isPass);
+
+    List<Shop> getHistoryShops();
 }

@@ -25,4 +25,6 @@ public interface UserService extends IService<User> {
     Integer updateUser(User user, User originUser, HttpServletRequest request);
 
     int changeRole(User loginUser, UserRoleEnum userRoleEnum);
+
+    int updateBalance(Long userId, Long shopUserId, Integer price);
 }

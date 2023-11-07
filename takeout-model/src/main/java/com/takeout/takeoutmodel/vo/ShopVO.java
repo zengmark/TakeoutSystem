@@ -36,4 +36,9 @@ public class ShopVO implements Serializable {
      * 店主ID
      */
     private Long userId;
+
+    /**
+     * 店铺的状态
+     */
+    private Integer shopStatus;
 }

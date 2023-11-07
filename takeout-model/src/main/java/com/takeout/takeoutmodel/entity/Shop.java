@@ -55,6 +55,10 @@ public class Shop implements Serializable {
      */
     private Long userId;
 
+    /**
+     * 店铺的状态
+     */
+    private Integer shopStatus;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
