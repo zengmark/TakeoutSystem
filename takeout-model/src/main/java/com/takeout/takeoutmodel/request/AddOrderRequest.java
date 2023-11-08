@@ -25,6 +25,11 @@ public class AddOrderRequest implements Serializable {
     private Long shopId;
 
     /**
+     * 优惠券ID，这个不一定会有，需要判断当前用户是否传了这个参数
+     */
+    private Long couponId;
+
+    /**
      * 该订单包含的菜品ID数组，以 , 分割
      */
     private String menuId;

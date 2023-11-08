@@ -1,5 +1,7 @@
 package com.takeout.takeoutorderservice.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.takeout.takeoutcommon.common.PageRequest;
 import com.takeout.takeoutmodel.entity.OrderInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.takeout.takeoutmodel.request.AddOrderRequest;
@@ -17,13 +19,17 @@ public interface OrderInfoService extends IService<OrderInfo> {
 
     int createOrder(AddOrderRequest addOrderRequest, HttpServletRequest request);
 
-    List<OrderInfoVO> listUserOrders(HttpServletRequest request);
+    Page<OrderInfoVO> listUserOrders(HttpServletRequest request, PageRequest pageRequest);
 
-    List<OrderInfoVO> listShopOrders(Long shopId);
+    Page<OrderInfoVO> listShopOrders(Long shopId, PageRequest pageRequest);
 
     int finishOrder(Long id);
 
-    List<OrderInfoVO> getShoppingCart(HttpServletRequest request);
+    Page<OrderInfoVO> getShoppingCart(PageRequest pageRequest, HttpServletRequest request);
 
     int cancelOrder(Long id, HttpServletRequest request);
+
+    int deleteShoppingCart(HttpServletRequest request);
+
+    Page<OrderInfoVO> getOrderInfoVOPage(Page<OrderInfo> orderInfoPage);
 }

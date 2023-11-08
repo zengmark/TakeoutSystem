@@ -48,4 +48,9 @@ public class UserVO implements Serializable {
      */
     private Long shopId;
 
+    /**
+     * 用户的默认地址的ID
+     */
+    private Long defaultAddressId;
+
 }

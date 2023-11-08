@@ -49,7 +49,7 @@ public class OrderInfoVO implements Serializable {
     /**
      * 订单状态，0 未完成，1 已完成
      */
-    private Integer status;
+    private Integer orderStatus;
 
     /**
      * 创建时间

@@ -1,10 +1,13 @@
 package com.takeout.takeoutshopservice.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.takeout.takeoutcommon.common.PageRequest;
 import com.takeout.takeoutmodel.entity.AddressInfo;
 import com.takeout.takeoutmodel.entity.Shop;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.takeout.takeoutmodel.request.AddShopRequest;
 import com.takeout.takeoutmodel.vo.ShopVO;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -19,15 +22,19 @@ public interface ShopService extends IService<Shop> {
 
     void test();
 
-    List<Shop> searchShopByName(String searchShopName);
+    Page<Shop> searchShopByName(String searchShopName, PageRequest pageRequest);
 
-    List<Shop> searchShopByTag(Integer tag);
+    Page<Shop> searchShopByTag(Integer tag, PageRequest pageRequest);
 
     AddressInfo getAddress(Long userId);
 
-    List<Shop> getShopToBeAudited();
+    Page<Shop> getShopToBeAudited(PageRequest pageRequest);
 
     int auditShop(Long id, Boolean isPass);
 
-    List<Shop> getHistoryShops();
+    Page<Shop> getHistoryShops(PageRequest pageRequest);
+
+    Page<ShopVO> getShopPageVO(Page<Shop> shopPage);
+
+//    Page<ShopVO> getAllShopsByPage(PageRequest pageRequest);
 }

@@ -1,6 +1,7 @@
 package com.takeout.takeoutuserservice.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.takeout.takeoutcommon.annotation.AuthCheck;
 import com.takeout.takeoutcommon.common.BaseResponse;
 import com.takeout.takeoutcommon.common.ErrorCode;
 import com.takeout.takeoutcommon.common.ResultUtils;
@@ -8,6 +9,7 @@ import com.takeout.takeoutcommon.constant.UserConstant;
 import com.takeout.takeoutcommon.exception.BusinessException;
 import com.takeout.takeoutmodel.entity.AddressInfo;
 import com.takeout.takeoutmodel.entity.User;
+import com.takeout.takeoutmodel.request.AddAddressRequest;
 import com.takeout.takeoutmodel.request.UserLoginRequest;
 import com.takeout.takeoutmodel.request.UserRegisterRequest;
 import com.takeout.takeoutmodel.vo.AddressInfoVO;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
@@ -32,7 +35,6 @@ public class UserController {
 
     @Resource
     private AddressInfoService addressInfoService;
-
 
     @GetMapping("/test")
     public BaseResponse<User> test(HttpServletRequest request){
@@ -144,6 +146,77 @@ public class UserController {
         List<AddressInfo> addressInfoList = addressInfoService.getUserAddress(loginUser);
         List<AddressInfoVO> addressInfoVOList = addressInfoList.stream().map(this::getAddressVo).collect(Collectors.toList());
         return ResultUtils.success(addressInfoVOList);
+    }
+
+    /**
+     * 用户添加地址，如果是第一次添加，设置该地址为默认地址
+     * @param addAddressRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/addUserAddress")
+    public BaseResponse<List<AddressInfoVO>> addUserAddress(@RequestBody AddAddressRequest addAddressRequest, HttpServletRequest request){
+        if(addAddressRequest == null || request == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        List<AddressInfo> addressInfoList = addressInfoService.addUserAddress(addAddressRequest, request);
+        List<AddressInfoVO> addressInfoVOList = addressInfoList.stream().map(this::getAddressVo).collect(Collectors.toList());
+        return ResultUtils.success(addressInfoVOList);
+    }
+
+    /**
+     * 店铺第一次创建后添加默认地址
+     * @param addAddressRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/addShopAddress")
+    @AuthCheck(haveRole = "shop")
+    public BaseResponse<AddressInfoVO> addShopAddress(@RequestBody AddAddressRequest addAddressRequest, HttpServletRequest request){
+        if(addAddressRequest == null || request == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        AddressInfo addressInfo = addressInfoService.addShopAddress(addAddressRequest, request);
+        return ResultUtils.success(this.getAddressVo(addressInfo));
+    }
+
+    /**
+     * 删除用户的地址，要判断删除的是否是默认地址，如果是默认地址，那么就要更新用户的默认地址为 -1，其他的情况下直接删除即可
+     * @param id
+     * @param request
+     * @return
+     */
+    @DeleteMapping("/deleteUserAddress")
+    public BaseResponse<List<AddressInfoVO>> deleteUserAddress(@RequestParam("id") Long id, HttpServletRequest request){
+        if(Objects.isNull(id) || request == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        List<AddressInfo> addressInfoList = addressInfoService.deleteUserAddress(id, request);
+        List<AddressInfoVO> addressInfoVOList = addressInfoList.stream().map(this::getAddressVo).collect(Collectors.toList());
+        return ResultUtils.success(addressInfoVOList);
+    }
+
+    /**
+     * 获取用户的默认地址
+     * @param request
+     * @return
+     */
+    @GetMapping("/getDefaultAddress")
+    public BaseResponse<AddressInfoVO> getDefaultAddress(HttpServletRequest request){
+        if(request == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        AddressInfo addressInfo = addressInfoService.getDefaultAddress(request);
+        return ResultUtils.success(this.getAddressVo(addressInfo));
+    }
+
+    @PutMapping("/setDefaultAddress")
+    public BaseResponse<Integer> setDefaultAddress(@RequestParam("id") Long id, HttpServletRequest request){
+        if(Objects.isNull(id) || request == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        int update = addressInfoService.setDefaultAddress(id, request);
+        return ResultUtils.success(update);
     }
 
     private AddressInfoVO getAddressVo(AddressInfo addressInfo){

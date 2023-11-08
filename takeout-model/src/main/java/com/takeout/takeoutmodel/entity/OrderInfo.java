@@ -42,7 +42,7 @@ public class OrderInfo implements Serializable {
     /**
      * 订单状态，0 未完成，1 已完成
      */
-    private Integer status;
+    private Integer orderStatus;
 
     /**
      * 创建时间
@@ -59,6 +59,11 @@ public class OrderInfo implements Serializable {
      */
     @TableLogic
     private Integer isDelete;
+
+    /**
+     * 该订单的价格
+     */
+    private Integer price;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

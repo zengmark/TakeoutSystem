@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -72,11 +73,33 @@ public class CouponController {
         return ResultUtils.success(userCouponVOList);
     }
 
+    /**
+     * 展示所有可用的优惠券（这里的可用的定义是，用户ID为-1且优惠券状态为0），返回一个 Map，key：优惠券名称，value：优惠券的数组
+     * @return
+     */
     @GetMapping("/getAllAvailableCoupons")
-    @AuthCheck(haveRole = "admin")
-    public BaseResponse<List<CouponVO>> getAllAvailableCoupons(){
+    public BaseResponse<Map<String, List<CouponVO>>> getAllAvailableCoupons(HttpServletRequest request){
+        if(request == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        List<Coupon> couponList = couponService.getAllAvailableCoupons(request);
+        Map<String, List<CouponVO>> availableCouponMap = couponList.stream().map(this::getCouponVO).collect(Collectors.groupingBy(CouponVO::getCouponName));
+        return ResultUtils.success(availableCouponMap);
+    }
 
-        return ResultUtils.success(null);
+    /**
+     * 批量删除优惠券，管理员的权限
+     * @param ids
+     * @return
+     */
+    @DeleteMapping("/deleteBatch")
+    @AuthCheck(haveRole = "admin")
+    public BaseResponse<Boolean> deleteBatch(@RequestBody List<Long> ids){
+        if(ids == null || ids.isEmpty()){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        boolean isSuccess = couponService.removeBatchByIds(ids);
+        return ResultUtils.success(isSuccess);
     }
 
     private CouponVO getCouponVO(Coupon coupon){

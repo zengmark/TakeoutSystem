@@ -75,9 +75,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setUserRole(originUser.getUserRole());
         user.setBalance(originUser.getBalance());
         user.setShopId(originUser.getShopId());
-        user.setCreateTime(originUser.getCreateTime());
-        user.setUpdateTime(originUser.getUpdateTime());
-        user.setIsDelete(originUser.getIsDelete());
+//        user.setCreateTime(originUser.getCreateTime());
+//        user.setUpdateTime(originUser.getUpdateTime());
+//        user.setIsDelete(originUser.getIsDelete());
+        user.setDefaultAddressId(originUser.getDefaultAddressId());
 
         return user;
     }

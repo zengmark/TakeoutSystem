@@ -60,6 +60,11 @@ public class Shop implements Serializable {
      */
     private Integer shopStatus;
 
+    /**
+     * 店铺简介
+     */
+    private String shopDescription;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

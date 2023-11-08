@@ -86,6 +86,11 @@ public class MenuController {
         return ResultUtils.success(menuVOMap);
     }
 
+    /**
+     * 更新菜品
+     * @param request
+     * @return
+     */
     @PutMapping("/update")
     public BaseResponse<Map<String, List<MenuVO>>> updateMenu(@RequestBody UpdateMenuRequest request){
         if(request == null){
@@ -110,6 +115,11 @@ public class MenuController {
         return ResultUtils.success(menuVOMap);
     }
 
+    /**
+     * 获取所有的菜品，包括已经删除的菜品
+     * @param historyIds
+     * @return
+     */
     @PostMapping("/getHistoryMenus")
     public BaseResponse<List<MenuVO>> getHistoryMenus(@RequestBody List<Long> historyIds){
         if(historyIds == null || historyIds.isEmpty()){

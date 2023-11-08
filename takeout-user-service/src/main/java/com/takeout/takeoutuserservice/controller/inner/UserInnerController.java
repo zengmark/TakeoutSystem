@@ -11,10 +11,7 @@ import com.takeout.takeoutserviceclient.service.UserFeignClient;
 import com.takeout.takeoutuserservice.service.AddressInfoService;
 import com.takeout.takeoutuserservice.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Objects;
@@ -41,6 +38,7 @@ public class UserInnerController implements UserFeignClient {
         return userService.changeRole(loginUser, userRoleEnum);
     }
 
+    @GetMapping("/get/id")
     @Override
     public User getUserById(Long userId) {
         return userService.getById(userId);
@@ -52,6 +50,7 @@ public class UserInnerController implements UserFeignClient {
      * @param userId
      * @return
      */
+    @GetMapping("/get/address")
     @Override
     public AddressInfo getAddressByUserId(Long userId) {
         QueryWrapper<AddressInfo> queryWrapper = new QueryWrapper<>();
@@ -64,6 +63,7 @@ public class UserInnerController implements UserFeignClient {
      * @param addressInfoId
      * @return
      */
+    @GetMapping("/get/addressByAddressId")
     @Override
     public AddressInfo getAddressByAddressId(Long addressInfoId) {
         if (Objects.isNull(addressInfoId)) {
@@ -72,6 +72,7 @@ public class UserInnerController implements UserFeignClient {
         return addressInfoService.getById(addressInfoId);
     }
 
+    @PutMapping("/updateBalance")
     @Override
     public int updateBalance(Long userId, Long shopUserId, Integer price) {
         if (Objects.isNull(userId) || Objects.isNull(shopUserId) || Objects.isNull(price)) {
@@ -80,6 +81,7 @@ public class UserInnerController implements UserFeignClient {
         return userService.updateBalance(userId, shopUserId, price);
     }
 
+    @GetMapping("/test")
     @Override
     public int test() {
         log.info("测试数据");

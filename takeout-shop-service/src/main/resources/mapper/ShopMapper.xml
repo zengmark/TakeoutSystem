@@ -13,14 +13,16 @@
             <result property="shopName" column="shopName" jdbcType="VARCHAR"/>
             <result property="picture" column="picture" jdbcType="VARCHAR"/>
             <result property="userId" column="userId" jdbcType="BIGINT"/>
-            <result property="shopStatus" column="status" jdbcType="TINYINT"/>
+            <result property="shopStatus" column="shopStatus" jdbcType="TINYINT"/>
+            <result property="shopDescription" column="shopDescription" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id
         ,tag,createTime,
         updateTime,isDelete,shopName,
-        picture,userId.shopStatus
+        picture,userId.shopStatus,
+        shopDescription
     </sql>
     <select id="getHistoryShops" resultType="com.takeout.takeoutmodel.entity.Shop">
         select * from shop;

@@ -2,9 +2,12 @@ package com.takeout.takeoutshopservice.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.takeout.takeoutcommon.annotation.AuthCheck;
 import com.takeout.takeoutcommon.common.BaseResponse;
 import com.takeout.takeoutcommon.common.ErrorCode;
+import com.takeout.takeoutcommon.common.PageRequest;
 import com.takeout.takeoutcommon.common.ResultUtils;
 import com.takeout.takeoutcommon.constant.UserConstant;
 import com.takeout.takeoutcommon.exception.BusinessException;
@@ -55,7 +58,7 @@ public class ShopController {
      * @return
      */
     @PostMapping("/addShop")
-    public BaseResponse<ShopVO> addShop(AddShopRequest addShopRequest, HttpServletRequest request) {
+    public BaseResponse<ShopVO> addShop(@RequestBody AddShopRequest addShopRequest, HttpServletRequest request) {
         if (addShopRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -70,8 +73,8 @@ public class ShopController {
      * @param request
      * @return
      */
-    @AuthCheck(haveRole = "shop")
     @GetMapping("/getShop")
+    @AuthCheck(haveRole = "shop")
     public BaseResponse<ShopVO> getShop(HttpServletRequest request) {
         if (request == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -87,49 +90,66 @@ public class ShopController {
         return ResultUtils.success(getShopVO(shop));
     }
 
+//    /**
+//     * 主页获取店铺信息 todo 待删除
+//     * todo 需要进行分页返回分页的数据
+//     *
+//     * @return
+//     */
+//    @GetMapping("/getAllShops")
+//    public BaseResponse<List<ShopVO>> getAllShops() {
+//        List<Shop> shopList = shopService.list();
+//        List<ShopVO> shopVOList = shopList.stream().filter(shop -> shop.getShopStatus() == 0).map(this::getShopVO).collect(Collectors.toList());
+//        return ResultUtils.success(shopVOList);
+//    }
+
     /**
      * 主页获取店铺信息
-     * todo 需要进行分页返回分页的数据
-     *
+     * todo 按条件排序
      * @return
      */
-    @GetMapping("/getAllShops")
-    public BaseResponse<List<ShopVO>> getAllShops() {
-        List<Shop> shopList = shopService.list();
-        List<ShopVO> shopVOList = shopList.stream().filter(shop -> shop.getShopStatus() == 0).map(this::getShopVO).collect(Collectors.toList());
-        return ResultUtils.success(shopVOList);
+    @PostMapping("/getAllShops")
+    public BaseResponse<Page<ShopVO>> getAllShopsByPage(@RequestBody PageRequest pageRequest) {
+        if(pageRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        long current = pageRequest.getCurrent();
+        long pageSize = pageRequest.getPageSize();
+        QueryWrapper<Shop> queryWrapper = new QueryWrapper<>();
+        // 只能查询已经审核完毕的店铺
+        queryWrapper.eq("shopStatus", 0);
+        Page<Shop> shopPage = shopService.page(new Page<>(current, pageSize), queryWrapper);
+        return ResultUtils.success(shopService.getShopPageVO(shopPage));
     }
 
     /**
      * 按名称搜索店铺
-     * todo 分页返回
+     * todo 按条件排序
      * @param searchShopName
      * @return
      */
-    @GetMapping("/searchByName")
-    public BaseResponse<List<ShopVO>> searchShopByName(@RequestParam("searchShopName") String searchShopName) {
-        if (StrUtil.isBlank(searchShopName)) {
+    @PostMapping("/searchByName")
+    public BaseResponse<Page<ShopVO>> searchShopByName(@RequestParam("searchShopName") String searchShopName, @RequestBody PageRequest pageRequest) {
+        if (StrUtil.isBlank(searchShopName) || pageRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        List<Shop> shopList = shopService.searchShopByName(searchShopName);
-        List<ShopVO> shopVOList = shopList.stream().filter(shop -> shop.getShopStatus() == 0).map(this::getShopVO).collect(Collectors.toList());
-        return ResultUtils.success(shopVOList);
+        Page<Shop> shopPage = shopService.searchShopByName(searchShopName, pageRequest);
+        return ResultUtils.success(shopService.getShopPageVO(shopPage));
     }
 
     /**
      * 按标签搜索店铺
-     * todo 分页返回
+     * todo 按条件排序
      * @param tag
      * @return
      */
-    @GetMapping("/searchByTag")
-    public BaseResponse<List<ShopVO>> searchShopByTag(@RequestParam("tag") Integer tag) {
-        if (Objects.isNull(tag)) {
+    @PostMapping("/searchByTag")
+    public BaseResponse<Page<ShopVO>> searchShopByTag(@RequestParam("tag") Integer tag, @RequestBody PageRequest pageRequest) {
+        if (Objects.isNull(tag) || pageRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        List<Shop> shopList = shopService.searchShopByTag(tag);
-        List<ShopVO> shopVOList = shopList.stream().filter(shop -> shop.getShopStatus() == 0).map(this::getShopVO).collect(Collectors.toList());
-        return ResultUtils.success(shopVOList);
+        Page<Shop> shopPage = shopService.searchShopByTag(tag, pageRequest);
+        return ResultUtils.success(shopService.getShopPageVO(shopPage));
     }
 
     /**
@@ -150,27 +170,32 @@ public class ShopController {
 
     /**
      * 获取所有待审核的店铺
-     * todo 分页返回，且按时间排序
+     * todo 按时间排序
      * @return
      */
-    @GetMapping("/getShopToBeAudited")
+    @PostMapping("/getShopToBeAudited")
     @AuthCheck(haveRole = "admin")
-    public BaseResponse<List<ShopVO>> getShopToBeAudited(){
-        List<Shop> shopList = shopService.getShopToBeAudited();
-        List<ShopVO> shopVOList = shopList.stream().map(this::getShopVO).collect(Collectors.toList());
-        return ResultUtils.success(shopVOList);
+    public BaseResponse<Page<ShopVO>> getShopToBeAudited(@RequestBody PageRequest pageRequest){
+        if(pageRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Page<Shop> shopPage = shopService.getShopToBeAudited(pageRequest);
+        return ResultUtils.success(shopService.getShopPageVO(shopPage));
     }
 
     /**
      * 返回所有店铺，包括被删除掉的
+     * todo 按条件排序
      * @return
      */
-    @GetMapping("/getHistoryShops")
+    @PostMapping("/getHistoryShops")
     @AuthCheck(haveRole = "admin")
-    public BaseResponse<List<ShopVO>> getHistoryShops(){
-        List<Shop> shopList = shopService.getHistoryShops();
-        List<ShopVO> shopVOList = shopList.stream().map(this::getShopVO).collect(Collectors.toList());
-        return ResultUtils.success(shopVOList);
+    public BaseResponse<Page<ShopVO>> getHistoryShops(@RequestBody PageRequest pageRequest){
+        if(pageRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Page<Shop> shopList = shopService.getHistoryShops(pageRequest);
+        return ResultUtils.success(shopService.getShopPageVO(shopList));
     }
 
     /**

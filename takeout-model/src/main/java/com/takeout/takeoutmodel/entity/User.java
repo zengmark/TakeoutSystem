@@ -65,6 +65,11 @@ public class User implements Serializable {
     private Date updateTime;
 
     /**
+     * 用户的默认地址的ID
+     */
+    private Long defaultAddressId;
+
+    /**
      * 是否删除，0 未删除，1 已删除
      */
     @TableLogic

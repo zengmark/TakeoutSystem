@@ -19,4 +19,12 @@ public interface CouponService extends IService<Coupon> {
     int grabCoupon(String couponName, HttpServletRequest request);
 
     List<Coupon> getUserCoupons(HttpServletRequest request);
+
+    Coupon getCouponById(Long couponId);
+
+    int setUsed(Long couponId, Long orderId);
+
+    int setUnUsed(Long id);
+
+    List<Coupon> getAllAvailableCoupons(HttpServletRequest request);
 }

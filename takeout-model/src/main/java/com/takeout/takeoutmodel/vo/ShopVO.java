@@ -41,4 +41,9 @@ public class ShopVO implements Serializable {
      * 店铺的状态
      */
     private Integer shopStatus;
+
+    /**
+     * 店铺简介
+     */
+    private String shopDescription;
 }

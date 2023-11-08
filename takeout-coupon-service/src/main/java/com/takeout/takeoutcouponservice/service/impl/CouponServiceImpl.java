@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -42,9 +43,6 @@ public class CouponServiceImpl extends ServiceImpl<CouponMapper, Coupon>
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         Long adminId = addCouponRequest.getAdminId();
-        String couponName = addCouponRequest.getCouponName();
-        Integer amount = addCouponRequest.getAmount();
-        Date expirationTime = addCouponRequest.getExpirationTime();
         Integer num = addCouponRequest.getNum();
 
         User loginUser = userFeignClient.getLoginUser(request);
@@ -89,12 +87,65 @@ public class CouponServiceImpl extends ServiceImpl<CouponMapper, Coupon>
     @Override
     public List<Coupon> getUserCoupons(HttpServletRequest request) {
         if(request == null){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            // 这里不要抛异常，直接返回一个空数组即可
+            return new ArrayList<>();
         }
         User loginUser = (User) request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         QueryWrapper<Coupon> queryWrapper = new QueryWrapper<>();
         // 查询用户优惠券（只查可用的）
         queryWrapper.eq("userId", loginUser.getId()).eq("couponStatus", 0);
+        return couponMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public Coupon getCouponById(Long couponId) {
+        if(Objects.isNull(couponId)){
+            // 这里不抛异常了，直接返回空即可
+            return null;
+        }
+        return couponMapper.selectById(couponId);
+    }
+
+    @Override
+    public int setUsed(Long couponId, Long orderId) {
+        if(Objects.isNull(couponId)){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+        }
+        Coupon coupon = couponMapper.selectById(couponId);
+        if(coupon.getCouponStatus() == 1){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+        }
+        // 绑定优惠券到用户以及订单
+        coupon.setOrderId(orderId);
+        coupon.setCouponStatus(1);
+        return couponMapper.updateById(coupon);
+    }
+
+    @Override
+    public int setUnUsed(Long id) {
+        if(Objects.isNull(id)){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+        }
+        QueryWrapper<Coupon> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("orderId", id);
+        List<Coupon> couponList = couponMapper.selectList(queryWrapper);
+        // 如果真的存在这个订单
+        if(couponList != null && !couponList.isEmpty()){
+            Coupon coupon = couponList.get(0);
+            coupon.setOrderId(-1L);
+            coupon.setCouponStatus(0);
+        }
+        return 1;
+    }
+
+    @Override
+    public List<Coupon> getAllAvailableCoupons(HttpServletRequest request) {
+        if(request == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userFeignClient.getLoginUser(request);
+        QueryWrapper<Coupon> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("couponStatus", 0).eq("userId", -1L);
         return couponMapper.selectList(queryWrapper);
     }
 }

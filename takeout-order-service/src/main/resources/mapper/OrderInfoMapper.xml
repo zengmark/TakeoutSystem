@@ -10,16 +10,18 @@
             <result property="shopId" column="shopId" jdbcType="BIGINT"/>
             <result property="menuId" column="menuId" jdbcType="VARCHAR"/>
             <result property="addressInfoId" column="addressInfoId" jdbcType="BIGINT"/>
-            <result property="status" column="status" jdbcType="TINYINT"/>
+            <result property="orderStatus" column="orderStatus" jdbcType="TINYINT"/>
             <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
             <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+            <result property="price" column="price" jdbcType="INTEGER"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,userId,shopId,
-        menuId,addressInfoId,status,
-        createTime,updateTime,isDelete
+        menuId,addressInfoId,orderStatus,
+        createTime,updateTime,isDelete,
+        price
     </sql>
     <select id="listShopOrders" resultType="com.takeout.takeoutmodel.entity.OrderInfo">
         select * from order_info where shopId = #{shopId};
